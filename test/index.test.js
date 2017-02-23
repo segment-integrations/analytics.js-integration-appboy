@@ -9,7 +9,9 @@ var Appboy = require('../lib/');
 describe('Appboy', function() {
   var analytics;
   var appboy;
-  var options = {};
+  var options = {
+    apiKey: '7c664901-d8c0-4f82-80bf-e7e7a24478e8'
+  };
 
   beforeEach(function() {
     analytics = new Analytics();
@@ -29,7 +31,8 @@ describe('Appboy', function() {
 
   it('should have the right settings', function() {
     analytics.compare(Appboy, integration('Appboy')
-      .tag(''));
+      .global('appboy')
+      .option('apiKey', ''));
   });
 
   describe('before loading', function() {
@@ -55,6 +58,27 @@ describe('Appboy', function() {
     beforeEach(function(done) {
       analytics.once('ready', done);
       analytics.initialize();
+    });
+
+    describe.skip('#track', function() {
+      beforeEach(function() {
+        analytics.stub(window, 'Appboy');
+      });
+
+      it('should send an event', function() {
+        analytics.track('event');
+        analytics.called();
+      });
+
+      it('should send the name of the event', function() {
+        analytics.track('event name');
+        analytics.called();
+      });
+
+      it('should send send all properties as an object', function() {
+        analytics.track('event with properties');
+        analytics.called();
+      });
     });
   });
 });
