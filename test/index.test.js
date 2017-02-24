@@ -60,24 +60,27 @@ describe('Appboy', function() {
       analytics.initialize();
     });
 
-    describe.skip('#track', function() {
+    describe('#track', function() {
       beforeEach(function() {
-        analytics.stub(window, 'Appboy');
+        analytics.stub(window.appboy, 'logCustomEvent');
       });
 
       it('should send an event', function() {
         analytics.track('event');
-        analytics.called();
+        analytics.called(window.appboy.logCustomEvent('event'));
       });
 
-      it('should send the name of the event', function() {
-        analytics.track('event name');
-        analytics.called();
-      });
-
-      it('should send send all properties as an object', function() {
-        analytics.track('event with properties');
-        analytics.called();
+      it('should send send all properties', function() {
+        analytics.track('event with properties', {
+          nickname: 'noonz',
+          spiritAnimal: 'wolf',
+          best_friend: 'tom'
+        });
+        analytics.called(window.appboy.logCustomEvent('event with properties', {
+          nickname: 'noonz',
+          spiritAnimal: 'wolf',
+          best_friend: 'tom'
+        }));
       });
     });
   });
