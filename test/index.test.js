@@ -75,6 +75,12 @@ describe('Appboy', function() {
       });
       analytics.initialize();
     });
+    
+    it('should call automaticallyDisplayMessages() by default when loading', function() {
+      analytics.once('ready', function() {
+        analytics.called(window.appboy.display.automaticallyShowNewInAppMessages);
+      });
+    });
 
     it('should not call automaticallyShowNewInAppMessages() when disabled', function() {
       appboy.options.automaticallyDisplayMessages = false;
