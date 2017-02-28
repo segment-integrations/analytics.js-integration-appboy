@@ -5,12 +5,15 @@ var integration = require('@segment/analytics.js-integration');
 var sandbox = require('@segment/clear-env');
 var tester = require('@segment/analytics.js-integration-tester');
 var Appboy = require('../lib/');
+var assert = require('assert');
 
 describe('Appboy', function() {
   var analytics;
   var appboy;
   var options = {
-    apiKey: '7c664901-d8c0-4f82-80bf-e7e7a24478e8'
+    apiKey: '7c664901-d8c0-4f82-80bf-e7e7a24478e8',
+    automaticallyDisplayMessages: true,
+    safariWebsitePushId: ''
   };
 
   beforeEach(function() {
@@ -32,7 +35,10 @@ describe('Appboy', function() {
   it('should have the right settings', function() {
     analytics.compare(Appboy, integration('Appboy')
       .global('appboy')
-      .option('apiKey', ''));
+      .option('apiKey', '')
+      .option('automaticallyDisplayMessages', true)
+      .option('safariWebsitePushId', '')
+      );
   });
 
   describe('before loading', function() {
@@ -45,12 +51,36 @@ describe('Appboy', function() {
         analytics.initialize();
         analytics.called(appboy.load);
       });
+
+      it('should send Safari Website Push ID if provided in the settings', function() {
+        appboy.options.safariWebsitePushId = 'web.com.example.domain';
+        analytics.initialize();
+        analytics.once('ready', function() {
+          analytics.assert(appboy.safariWebsitePushId === options.safariWebsitePushId);
+        });
+      });
     });
   });
 
   describe('loading', function() {
     it('should load', function(done) {
       analytics.load(appboy, done);
+    });
+
+    it('should call changeUser if userID is present', function(done) {
+      analytics.user().id('user-id');
+      analytics.once('ready', function() {
+        assert.equal(window.appboy.getUser().getUserId(), 'user-id');
+        done();
+      });
+      analytics.initialize();
+    });
+
+    it('should not call automaticallyShowNewInAppMessages() when disabled', function() {
+      appboy.options.automaticallyDisplayMessages = false;
+      analytics.once('ready', function() {
+        analytics.didNotCall(window.appboy.display.automaticallyShowNewInAppMessages);  
+      });
     });
   });
 
@@ -60,82 +90,14 @@ describe('Appboy', function() {
       analytics.initialize();
     });
 
-    describe('#track', function() {
+    describe('#identify', function() {
       beforeEach(function() {
-        analytics.stub(window.appboy, 'logCustomEvent');
-        analytics.stub(window.appboy, 'logPurchase');
+        analytics.stub(window.appboy, 'changeUser');
       });
 
-      it('should send an event', function() {
-        analytics.track('event');
-        analytics.called(window.appboy.logCustomEvent, 'event');
-      });
-
-      it('should send send all properties', function() {
-        analytics.track('event with properties', {
-          nickname: 'noonz',
-          spiritAnimal: 'wolf',
-          best_friend: 'tom'
-        });
-        analytics.called(window.appboy.logCustomEvent, 'event with properties', {
-          nickname: 'noonz',
-          spiritAnimal: 'wolf',
-          best_friend: 'tom'
-        });
-      });
-
-      it('should call logPurchase for each product', function() {
-        analytics.track('Order Completed', {
-          total: 30,
-          revenue: 25,
-          shipping: 3,
-          currency: 'USD',
-          products: [
-            {
-              product_id: '507f1f77bcf86cd799439011',
-              sku: '45790-32',
-              name: 'Monopoly: 3rd Edition',
-              price: 19.23,
-              quantity: 1,
-              category: 'Games'
-            },
-            {
-              product_id: '505bd76785ebb509fc183733',
-              sku: '46493-32',
-              name: 'Uno Card Game',
-              price: 3,
-              quantity: 2,
-              category: 'Games'
-            }
-          ]
-        });
-        analytics.called(window.appboy.logPurchase, '507f1f77bcf86cd799439011', 19.23, 'USD', 1, {
-          total: 30,
-          revenue: 25,
-          shipping: 3
-        });
-        analytics.called(window.appboy.logPurchase, '505bd76785ebb509fc183733', 3, 'USD', 2, {
-          total: 30,
-          revenue: 25,
-          shipping: 3
-        });
-      });
-
-      it('should not fail if currency, quantity, and purchaseProperties are undefined', function() {
-        analytics.track('Order Completed', {
-          products: [
-            {
-              product_id: '507f1f77bcf86cd799439011',
-              price: 19.23
-            },
-            {
-              product_id: '505bd76785ebb509fc183733',
-              price: 3
-            }
-          ]
-        });
-        analytics.called(window.appboy.logPurchase, '507f1f77bcf86cd799439011', 19.23);
-        analytics.called(window.appboy.logPurchase, '505bd76785ebb509fc183733', 3);
+      it('should only send an identify call if userId is present', function() {
+        analytics.identify('userId');
+        analytics.called(window.appboy.changeUser, 'userId');
       });
     });
   });
