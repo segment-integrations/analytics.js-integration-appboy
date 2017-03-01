@@ -51,14 +51,6 @@ describe('Appboy', function() {
         analytics.initialize();
         analytics.called(appboy.load);
       });
-
-      it('should send Safari Website Push ID if provided in the settings', function() {
-        appboy.options.safariWebsitePushId = 'web.com.example.domain';
-        analytics.initialize();
-        analytics.once('ready', function() {
-          analytics.assert(appboy.safariWebsitePushId === options.safariWebsitePushId);
-        });
-      });
     });
   });
 
@@ -75,18 +67,13 @@ describe('Appboy', function() {
       });
       analytics.initialize();
     });
-    
-    it('should call automaticallyDisplayMessages() by default when loading', function() {
-      analytics.once('ready', function() {
-        analytics.called(window.appboy.display.automaticallyShowNewInAppMessages);
-      });
-    });
 
-    it('should not call automaticallyShowNewInAppMessages() when disabled', function() {
-      appboy.options.automaticallyDisplayMessages = false;
+    it('should send Safari Website Push ID if provided in the settings', function() {
+      appboy.options.safariWebsitePushId = 'web.com.example.domain';
       analytics.once('ready', function() {
-        analytics.didNotCall(window.appboy.display.automaticallyShowNewInAppMessages);  
+        analytics.assert(appboy.safariWebsitePushId === options.safariWebsitePushId);
       });
+      analytics.initialize();
     });
   });
 
