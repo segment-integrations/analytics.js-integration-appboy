@@ -92,6 +92,92 @@ describe('Appboy', function() {
         analytics.identify('userId');
         analytics.called(window.appboy.changeUser, 'userId');
       });
+
+      it('should call setUserAttribute and setCustomUserAttribute with correct values', function() {
+        analytics.stub(appboy, 'setUserAttributes');
+        analytics.stub(appboy, 'setCustomerUserAttributes');
+
+        analytics.identify('userId', {
+          name: 'Gilfoyle',
+          birthday: '02/14/1992',
+          email: 'gilfoyle@piedpiper.com',
+          plan: 'premium',
+          logins: 5,
+          gender: 'male',
+          address: {
+            city:'San Francisco',
+            country: 'USA'
+          }
+        });
+
+        analytics.called(appboy.setUserAttributes, {
+          email: 'gilfoyle@piedpiper.com',
+          plan: 'premium',
+          logins: 5,
+          gender: 'male',
+          first_name: 'Gilfoyle',
+          dob: '1992-02-14',
+          home_city: 'San Francisco',
+          country: 'USA',
+          external_id: 'userId'
+        });
+        // analytics.called(appboy.setCustomerUserAttributes, {});
+      });
+    });
+
+    describe('#track', function() {
+      beforeEach(function() {
+        analytics.stub(window.appboy, 'logCustomEvent');
+      });
+
+      it('should send a track call to make a custom event', function() {
+        analytics.track('Registered', { plan: 'Pro Annual', accountType: 'Facebook' });
+        analytics.called(window.appboy.logCustomEvent, 'Registered', { plan: 'Pro Annual', accountType: 'Facebook' });
+      });
+    });
+
+    describe('#Order Completed', function() {
+      beforeEach(function() {
+        analytics.stub(window.appboy, 'logPurchase');
+      });
+
+      it('should call order completed', function() {
+        analytics.track('Order Completed', {
+          checkout_id: 'fksdjfsdjfisjf9sdfjsd9f',
+          order_id: '50314b8e9bcf000000000000',
+          currency: 'USD',
+          products: [
+            {
+              product_id: '507f1f77bcf86cd799439011',
+              name: 'Monopoly: 3rd Edition',
+              price: 19,
+              quantity: 1
+            }]
+        });
+
+        analytics.called(window.appboy.logPurchase,
+          '507f1f77bcf86cd799439011',
+          19,
+          'USD',
+          1,
+          {
+            orderId:'50314b8e9bcf000000000000',
+            checkoutId: 'fksdjfsdjfisjf9sdfjsd9f'
+          }
+        );
+      });
+    });
+
+    describe('#Group', function() {
+      beforeEach(function() {
+        analytics.stub(appboy, 'setCustomUserAttribute');
+      });
+
+      it('should call group', function() {
+        var groupId = 'test1234';
+        analytics.group(groupId);
+        analytics.called(appboy.setCustomUserAttribute, 'ab_segment_group_test1234');
+      });
     });
   });
 });
