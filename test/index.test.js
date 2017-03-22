@@ -161,8 +161,8 @@ describe('Appboy', function() {
           'USD',
           1,
           {
-            orderId:'50314b8e9bcf000000000000',
-            checkoutId: 'fksdjfsdjfisjf9sdfjsd9f'
+            order_id:'50314b8e9bcf000000000000',
+            checkout_id: 'fksdjfsdjfisjf9sdfjsd9f'
           }
         );
       });
