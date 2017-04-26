@@ -86,11 +86,156 @@ describe('Appboy', function() {
     describe('#identify', function() {
       beforeEach(function() {
         analytics.stub(window.appboy, 'changeUser');
+        analytics.stub(window.appboy.ab.User.prototype, 'setFirstName');
+        analytics.stub(window.appboy.ab.User.prototype, 'setLastName');
+        analytics.stub(window.appboy.ab.User.prototype, 'setPhoneNumber');
+        analytics.stub(window.appboy.ab.User.prototype, 'setEmail');
+        analytics.stub(window.appboy.ab.User.prototype, 'setAvatarImageUrl');
+        analytics.stub(window.appboy.ab.User.prototype, 'setHomeCity');
+        analytics.stub(window.appboy.ab.User.prototype, 'setCountry');
+        analytics.stub(window.appboy.ab.User.prototype, 'setDateOfBirth');
+        analytics.stub(window.appboy.ab.User.prototype, 'setGender');
+        analytics.stub(window.appboy.ab.User.prototype, 'setCustomUserAttribute');
       });
 
       it('should only send an identify call if userId is present', function() {
         analytics.identify('userId');
         analytics.called(window.appboy.changeUser, 'userId');
+      });
+
+      it('should call each Appboy method for standard traits', function() {
+        analytics.identify('userId', {
+          firstName: 'Alex',
+          lastName: 'Noonan',
+          phone: '555-555-5555',
+          email: 'alex@email.com',
+          avatar: 'https://s-media-cache-ak0.pinimg.com/736x/39/b9/75/39b9757ac27c6eabba292d71a63def2c.jpg',
+          gender: 'woman',
+          birthday: '1991-09-16T00:00:00.000Z',
+          address: {
+            city: 'Dublin',
+            country: 'Ireland'
+          }
+        });
+        analytics.called(window.appboy.changeUser, 'userId');
+        analytics.called(window.appboy.ab.User.prototype.setAvatarImageUrl, 'https://s-media-cache-ak0.pinimg.com/736x/39/b9/75/39b9757ac27c6eabba292d71a63def2c.jpg');
+        analytics.called(window.appboy.ab.User.prototype.setCountry, 'Ireland');
+        analytics.called(window.appboy.ab.User.prototype.setDateOfBirth, 1991, 9, 16);
+        analytics.called(window.appboy.ab.User.prototype.setEmail, 'alex@email.com');
+        analytics.called(window.appboy.ab.User.prototype.setFirstName, 'Alex');
+        analytics.called(window.appboy.ab.User.prototype.setHomeCity, 'Dublin');
+        analytics.called(window.appboy.ab.User.prototype.setGender, window.appboy.ab.User.Genders.FEMALE);
+        analytics.called(window.appboy.ab.User.prototype.setLastName, 'Noonan');
+        analytics.called(window.appboy.ab.User.prototype.setPhoneNumber, '555-555-5555');
+      });
+
+      it('should handle custom traits of all types', function() {
+        analytics.identify('userId', {
+          song: 'Who\'s That Chick?',
+          artists: ['David Guetta', 'Rihanna'],
+          number: 16,
+          date: 'Tue Apr 25 2017 14:22:48 GMT-0700 (PDT)'
+        });
+        analytics.called(window.appboy.changeUser, 'userId');
+        analytics.called(window.appboy.ab.User.prototype.setCustomUserAttribute, 'song', 'Who\'s That Chick?');
+        analytics.called(window.appboy.ab.User.prototype.setCustomUserAttribute, 'artists', ['David Guetta', 'Rihanna']);
+        analytics.called(window.appboy.ab.User.prototype.setCustomUserAttribute, 'number', 16);
+        analytics.called(window.appboy.ab.User.prototype.setCustomUserAttribute, 'date', 'Tue Apr 25 2017 14:22:48 GMT-0700 (PDT)');
+      });
+    });
+
+    describe('#group', function() {
+      beforeEach(function() {
+        analytics.user().identify('userId');
+        analytics.stub(window.appboy, 'changeUser');
+        analytics.stub(window.appboy.ab.User.prototype, 'setCustomUserAttribute');
+      });
+
+      it('should send group calls with group ID as a custom field', function() {
+        analytics.group('0e8c78ea9d97a7b8185e8632', {
+          name: 'Initech'
+        });
+        analytics.called(window.appboy.changeUser, 'userId');
+        analytics.called(window.appboy.ab.User.prototype.setCustomUserAttribute, 'ab_segment_group_0e8c78ea9d97a7b8185e8632', true);
+      });
+    });
+
+    describe('#track', function() {
+      beforeEach(function() {
+        analytics.stub(window.appboy, 'logCustomEvent');
+        analytics.stub(window.appboy, 'logPurchase');
+      });
+
+      it('should send an event', function() {
+        analytics.track('event');
+        analytics.called(window.appboy.logCustomEvent, 'event');
+      });
+
+      it('should send all properties', function() {
+        analytics.track('event with properties', {
+          nickname: 'noonz',
+          spiritAnimal: 'rihanna',
+          best_friend: 'tom'
+        });
+        analytics.called(window.appboy.logCustomEvent, 'event with properties', {
+          nickname: 'noonz',
+          spiritAnimal: 'rihanna',
+          best_friend: 'tom'
+        });
+      });
+
+      it('should call logPurchase for each product in a Completed Order event', function() {
+        analytics.track('Order Completed', {
+          total: 30,
+          revenue: 25,
+          shipping: 3,
+          currency: 'USD',
+          products: [
+            {
+              product_id: '507f1f77bcf86cd799439011',
+              sku: '45790-32',
+              name: 'Monopoly: 3rd Edition',
+              price: 19.23,
+              quantity: 1,
+              category: 'Games'
+            },
+            {
+              product_id: '505bd76785ebb509fc183733',
+              sku: '46493-32',
+              name: 'Uno Card Game',
+              price: 3,
+              quantity: 2,
+              category: 'Games'
+            }
+          ]
+        });
+        analytics.called(window.appboy.logPurchase, '507f1f77bcf86cd799439011', 19.23, 'USD', 1, {
+          total: 30,
+          revenue: 25,
+          shipping: 3
+        });
+        analytics.called(window.appboy.logPurchase, '505bd76785ebb509fc183733', 3, 'USD', 2, {
+          total: 30,
+          revenue: 25,
+          shipping: 3
+        });
+      });
+
+      it('should not fail if currency, quantity, and purchaseProperties are undefined', function() {
+        analytics.track('Order Completed', {
+          products: [
+            {
+              product_id: '507f1f77bcf86cd799439011',
+              price: 17.38
+            },
+            {
+              product_id: '505bd76785ebb509fc183733',
+              price: 3
+            }
+          ]
+        });
+        analytics.called(window.appboy.logPurchase, '507f1f77bcf86cd799439011', 17.38);
+        analytics.called(window.appboy.logPurchase, '505bd76785ebb509fc183733', 3);
       });
     });
   });
