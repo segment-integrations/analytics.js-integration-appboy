@@ -129,6 +129,22 @@ describe('Appboy', function() {
         analytics.called(window.appboy.ab.User.prototype.setPhoneNumber, '555-555-5555');
       });
 
+      it('should set gender to male when passed male gender', function() {
+        analytics.identify('userId', {
+          gender: 'male'
+        });
+        analytics.called(window.appboy.changeUser, 'userId');
+        analytics.called(window.appboy.ab.User.prototype.setGender, window.appboy.ab.User.Genders.MALE);
+      });
+
+      it('should set gender to other when passed other gender', function() {
+        analytics.identify('userId', {
+          gender: 'o'
+        });
+        analytics.called(window.appboy.changeUser, 'userId');
+        analytics.called(window.appboy.ab.User.prototype.setGender, window.appboy.ab.User.Genders.OTHER);
+      });
+
       it('should handle custom traits of all types', function() {
         analytics.identify('userId', {
           song: 'Who\'s That Chick?',
