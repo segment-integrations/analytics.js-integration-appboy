@@ -158,8 +158,6 @@ describe('Appboy', function() {
 
     describe('#group', function() {
       beforeEach(function() {
-        analytics.user().identify('userId');
-        analytics.stub(window.appboy, 'changeUser');
         analytics.stub(window.appboy.ab.User.prototype, 'setCustomUserAttribute');
       });
 
@@ -167,7 +165,6 @@ describe('Appboy', function() {
         analytics.group('0e8c78ea9d97a7b8185e8632', {
           name: 'Initech'
         });
-        analytics.called(window.appboy.changeUser, 'userId');
         analytics.called(window.appboy.ab.User.prototype.setCustomUserAttribute, 'ab_segment_group_0e8c78ea9d97a7b8185e8632', true);
       });
     });
@@ -253,7 +250,6 @@ describe('Appboy', function() {
 
     describe('#page', function() {
       beforeEach(function() {
-        analytics.user().identify('userId');
         analytics.stub(window.appboy, 'logCustomEvent');
       });
 
