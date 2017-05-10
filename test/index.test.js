@@ -13,7 +13,10 @@ describe('Appboy', function() {
   var options = {
     apiKey: '7c664901-d8c0-4f82-80bf-e7e7a24478e8',
     automaticallyDisplayMessages: true,
-    safariWebsitePushId: ''
+    safariWebsitePushId: '',
+    enableHtmlInAppMessages: false,
+    trackAllPages: false,
+    trackNamedPages: false
   };
 
   beforeEach(function() {
@@ -38,6 +41,9 @@ describe('Appboy', function() {
       .option('apiKey', '')
       .option('automaticallyDisplayMessages', true)
       .option('safariWebsitePushId', '')
+      .option('enableHtmlInAppMessages', false)
+      .option('trackAllPages', false)
+      .option('trackNamedPages', false)
       );
   });
 
@@ -85,7 +91,6 @@ describe('Appboy', function() {
 
     describe('#identify', function() {
       beforeEach(function() {
-        analytics.stub(window.appboy, 'changeUser');
         analytics.stub(window.appboy.ab.User.prototype, 'setFirstName');
         analytics.stub(window.appboy.ab.User.prototype, 'setLastName');
         analytics.stub(window.appboy.ab.User.prototype, 'setPhoneNumber');
@@ -96,11 +101,6 @@ describe('Appboy', function() {
         analytics.stub(window.appboy.ab.User.prototype, 'setDateOfBirth');
         analytics.stub(window.appboy.ab.User.prototype, 'setGender');
         analytics.stub(window.appboy.ab.User.prototype, 'setCustomUserAttribute');
-      });
-
-      it('should only send an identify call if userId is present', function() {
-        analytics.identify('userId');
-        analytics.called(window.appboy.changeUser, 'userId');
       });
 
       it('should call each Appboy method for standard traits', function() {
@@ -117,7 +117,6 @@ describe('Appboy', function() {
             country: 'Ireland'
           }
         });
-        analytics.called(window.appboy.changeUser, 'userId');
         analytics.called(window.appboy.ab.User.prototype.setAvatarImageUrl, 'https://s-media-cache-ak0.pinimg.com/736x/39/b9/75/39b9757ac27c6eabba292d71a63def2c.jpg');
         analytics.called(window.appboy.ab.User.prototype.setCountry, 'Ireland');
         analytics.called(window.appboy.ab.User.prototype.setDateOfBirth, 1991, 9, 16);
@@ -133,7 +132,6 @@ describe('Appboy', function() {
         analytics.identify('userId', {
           gender: 'male'
         });
-        analytics.called(window.appboy.changeUser, 'userId');
         analytics.called(window.appboy.ab.User.prototype.setGender, window.appboy.ab.User.Genders.MALE);
       });
 
@@ -141,7 +139,6 @@ describe('Appboy', function() {
         analytics.identify('userId', {
           gender: 'o'
         });
-        analytics.called(window.appboy.changeUser, 'userId');
         analytics.called(window.appboy.ab.User.prototype.setGender, window.appboy.ab.User.Genders.OTHER);
       });
 
@@ -152,7 +149,6 @@ describe('Appboy', function() {
           number: 16,
           date: 'Tue Apr 25 2017 14:22:48 GMT-0700 (PDT)'
         });
-        analytics.called(window.appboy.changeUser, 'userId');
         analytics.called(window.appboy.ab.User.prototype.setCustomUserAttribute, 'song', 'Who\'s That Chick?');
         analytics.called(window.appboy.ab.User.prototype.setCustomUserAttribute, 'artists', ['David Guetta', 'Rihanna']);
         analytics.called(window.appboy.ab.User.prototype.setCustomUserAttribute, 'number', 16);
@@ -252,6 +248,51 @@ describe('Appboy', function() {
         });
         analytics.called(window.appboy.logPurchase, '507f1f77bcf86cd799439011', 17.38);
         analytics.called(window.appboy.logPurchase, '505bd76785ebb509fc183733', 3);
+      });
+    });
+
+    describe('#page', function() {
+      beforeEach(function() {
+        analytics.user().identify('userId');
+        analytics.stub(window.appboy, 'logCustomEvent');
+      });
+
+      it('should send a page view if trackAllPages is enabled', function() {
+        appboy.options.trackAllPages = true;
+        analytics.page();
+        analytics.called(window.appboy.logCustomEvent, 'Loaded a Page');
+      });
+
+      it('should send a page view if trackNamedPages is enabled', function() {
+        appboy.options.trackNamedPages = true;
+        analytics.page('Home');
+        analytics.called(window.appboy.logCustomEvent, 'Viewed Home Page');
+      });
+
+      it('should not send a page view if trackAllPages and trackNamedPages are disabled', function() {
+        analytics.page('Home');
+        analytics.didNotCall(window.appboy.logCustomEvent);
+      });
+
+      it('should not send a page view if trackNamedPages is enabled and name is null', function() {
+        analytics.page();
+        analytics.didNotCall(window.appboy.logCustomEvent);
+      });
+
+      it('should send all properties', function() {
+        appboy.options.trackAllPages = true;
+        analytics.page('Home', {
+          title: 'noonz',
+          url: 'www.google.com'
+        });
+        analytics.called(window.appboy.logCustomEvent, 'Viewed Home Page', {
+          title: 'noonz',
+          url: 'www.google.com',
+          name: 'Home',
+          path: window.location.pathname,
+          referrer: window.document.referrer,
+          search: ''
+        });
       });
     });
   });
