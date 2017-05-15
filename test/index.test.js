@@ -91,6 +91,7 @@ describe('Appboy', function() {
 
     describe('#identify', function() {
       beforeEach(function() {
+        analytics.stub(window.appboy, 'changeUser');
         analytics.stub(window.appboy.ab.User.prototype, 'setFirstName');
         analytics.stub(window.appboy.ab.User.prototype, 'setLastName');
         analytics.stub(window.appboy.ab.User.prototype, 'setPhoneNumber');
@@ -117,6 +118,7 @@ describe('Appboy', function() {
             country: 'Ireland'
           }
         });
+        analytics.called(window.appboy.changeUser, 'userId');
         analytics.called(window.appboy.ab.User.prototype.setAvatarImageUrl, 'https://s-media-cache-ak0.pinimg.com/736x/39/b9/75/39b9757ac27c6eabba292d71a63def2c.jpg');
         analytics.called(window.appboy.ab.User.prototype.setCountry, 'Ireland');
         analytics.called(window.appboy.ab.User.prototype.setDateOfBirth, 1991, 9, 16);
@@ -132,6 +134,7 @@ describe('Appboy', function() {
         analytics.identify('userId', {
           gender: 'male'
         });
+        analytics.called(window.appboy.changeUser, 'userId');
         analytics.called(window.appboy.ab.User.prototype.setGender, window.appboy.ab.User.Genders.MALE);
       });
 
@@ -139,6 +142,7 @@ describe('Appboy', function() {
         analytics.identify('userId', {
           gender: 'o'
         });
+        analytics.called(window.appboy.changeUser, 'userId');
         analytics.called(window.appboy.ab.User.prototype.setGender, window.appboy.ab.User.Genders.OTHER);
       });
 
@@ -149,6 +153,7 @@ describe('Appboy', function() {
           number: 16,
           date: 'Tue Apr 25 2017 14:22:48 GMT-0700 (PDT)'
         });
+        analytics.called(window.appboy.changeUser, 'userId');
         analytics.called(window.appboy.ab.User.prototype.setCustomUserAttribute, 'song', 'Who\'s That Chick?');
         analytics.called(window.appboy.ab.User.prototype.setCustomUserAttribute, 'artists', ['David Guetta', 'Rihanna']);
         analytics.called(window.appboy.ab.User.prototype.setCustomUserAttribute, 'number', 16);
