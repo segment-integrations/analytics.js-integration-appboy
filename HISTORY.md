@@ -1,3 +1,9 @@
+1.2.0 / 2017-05-15
+==================
+
+  * Add enableHtmlInAppMessages option
+  * Add support for page calls
+
 1.1.0 / 2017-04-27
 ==================
 
