@@ -1,3 +1,8 @@
+1.2.1 / 2017-06-26
+==================
+
+  * Remove reserved keys from custom event properties and user attributes 
+
 1.2.0 / 2017-05-15
 ==================
 
