@@ -159,6 +159,11 @@ describe('Appboy', function() {
         analytics.called(window.appboy.ab.User.prototype.setCustomUserAttribute, 'number', 16);
         analytics.called(window.appboy.ab.User.prototype.setCustomUserAttribute, 'date', 'Tue Apr 25 2017 14:22:48 GMT-0700 (PDT)');
       });
+
+      it('should not let you set reserved keys as custom attributes', function() {
+        analytics.identify('rick sanchez', { avatar: 'airbender', external_id: '123' });
+        analytics.didNotCall(window.appboy.ab.User.prototype.setCustomUserAttribute);
+      });
     });
 
     describe('#group', function() {
@@ -189,13 +194,24 @@ describe('Appboy', function() {
         analytics.track('event with properties', {
           nickname: 'noonz',
           spiritAnimal: 'rihanna',
-          best_friend: 'tom'
+          best_friend: 'han'
         });
         analytics.called(window.appboy.logCustomEvent, 'event with properties', {
           nickname: 'noonz',
           spiritAnimal: 'rihanna',
-          best_friend: 'tom'
+          best_friend: 'han'
         });
+      });
+
+      it('should remove reserved keys from custom event properties', function() {
+        analytics.track('event with properties', {
+          product_id: 'noonz',
+          event_name: 'rihanna',
+          time: 'han',
+          currency: 'usd',
+          quantity: '123'
+        });
+        analytics.called(window.appboy.logCustomEvent, 'event with properties', {});
       });
 
       it('should call logPurchase for each product in a Completed Order event', function() {
