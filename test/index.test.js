@@ -6,6 +6,7 @@ var sandbox = require('@segment/clear-env');
 var tester = require('@segment/analytics.js-integration-tester');
 var Appboy = require('../lib/');
 var assert = require('assert');
+var sinon = require('sinon');
 
 describe('Appboy', function() {
   var analytics;
@@ -63,6 +64,34 @@ describe('Appboy', function() {
   describe('loading', function() {
     it('should load', function(done) {
       analytics.load(appboy, done);
+    });
+
+    it('should set the sdk endpoint to EU datacenter if options.datacenter === eu', function(done) {
+      appboy.options.datacenter = 'eu';
+      var spy = sinon.spy(appboy, 'initializeTester');
+      analytics.once('ready', function() {
+        try {
+          assert.equal(spy.args[0][1].baseUrl, 'https://sdk.api.appboy.eu/api/v3');
+          done();
+        } catch (e) {
+          done(e);
+        }
+      });
+      analytics.initialize();
+    });
+
+    it('should set the sdk endpoint to a custom URI if one is provided', function(done) {
+      appboy.options.customEndpoint = 'https://my.custom.endpoint.com';
+      var spy = sinon.spy(appboy, 'initializeTester');
+      analytics.once('ready', function() {
+        try {
+          assert.equal(spy.args[0][1].baseUrl, 'https://my.custom.endpoint.com');
+          done();
+        } catch (e) {
+          done(e);
+        }
+      });
+      analytics.initialize();
     });
 
     it('should call changeUser if userID is present', function(done) {
