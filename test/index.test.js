@@ -18,7 +18,8 @@ describe('Appboy', function() {
     enableHtmlInAppMessages: false,
     trackAllPages: false,
     trackNamedPages: false,
-    customEndpoint: ''
+    customEndpoint: '',
+    version: 1
   };
 
   beforeEach(function() {
@@ -41,13 +42,23 @@ describe('Appboy', function() {
     analytics.compare(Appboy, integration('Appboy')
       .global('appboy')
       .option('apiKey', '')
-      .option('automaticallyDisplayMessages', true)
       .option('safariWebsitePushId', '')
+      .option('allowCrawlerActivity', false)
+      .option('doNotLoadFontAwesome', false)
+      .option('enableLogging', false)
+      .option('automaticallyDisplayMessages', true)
+      .option('localization', 'en')
+      .option('minimumIntervalBetweenTriggerActionsInSeconds', 30)
+      .option('openInAppMessagesInNewTab', false)
+      .option('openNewsFeedCardsInNewTab', false)
+      .option('sessionTimeoutInSeconds', 30)
+      .option('requireExplicitInAppMessageDismissal', false)
       .option('enableHtmlInAppMessages', false)
       .option('trackAllPages', false)
       .option('trackNamedPages', false)
       .option('customEndpoint', '')
-      );
+      .option('version', 1)
+    );
   });
 
   describe('before loading', function() {
@@ -66,6 +77,38 @@ describe('Appboy', function() {
   describe('loading', function() {
     it('should load', function(done) {
       analytics.load(appboy, done);
+    });
+
+    it('should use initializeV1 if version is set to 1', function(done) {
+      var V1spy = sinon.spy(appboy, 'initializeV1');
+      var V2spy = sinon.spy(appboy, 'initializeV2');
+      appboy.options.version = 1;
+      analytics.once('ready', function() {
+        try {
+          assert(V1spy.called);
+          assert(!V2spy.called);
+          done();
+        } catch (e) {
+          done(e);
+        }
+      });
+      analytics.initialize();
+    });
+
+    it('should use initializeV2 if version is set to 2', function(done) {
+      var V1spy = sinon.spy(appboy, 'initializeV1');
+      var V2spy = sinon.spy(appboy, 'initializeV2');
+      appboy.options.version = 2;
+      analytics.once('ready', function() {
+        try {
+          assert(V2spy.called);
+          assert(!V1spy.called);
+          done();
+        } catch (e) {
+          done(e);
+        }
+      });
+      analytics.initialize();
     });
 
     it('should set the sdk endpoint to EU datacenter if options.datacenter === eu', function(done) {
@@ -110,21 +153,70 @@ describe('Appboy', function() {
       analytics.initialize();
     });
 
-    it('should call changeUser if userID is present', function(done) {
-      analytics.user().id('user-id');
+    it('should send Safari Website Push ID if provided in the settings', function(done) {
+      appboy.options.safariWebsitePushId = 'web.com.example.domain';
+      var spy = sinon.spy(appboy, 'initializeTester');
       analytics.once('ready', function() {
-        assert.equal(window.appboy.getUser().getUserId(), 'user-id');
-        done();
+        try {
+          analytics.assert(spy.args[0][1].safariWebsitePushId, options.safariWebsitePushId);
+          done();
+        } catch (e) {
+          done(e);
+        }
       });
       analytics.initialize();
     });
 
-    it('should send Safari Website Push ID if provided in the settings', function() {
-      appboy.options.safariWebsitePushId = 'web.com.example.domain';
-      analytics.once('ready', function() {
-        analytics.assert(appboy.safariWebsitePushId === options.safariWebsitePushId);
+    describe('initializeV1', function() {
+      it('should call changeUser if userID is present', function(done) {
+        analytics.user().id('user-id');
+        analytics.once('ready', function() {
+          assert.equal(window.appboy.getUser().getUserId(), 'user-id');
+          done();
+        });
+        analytics.initialize();
       });
-      analytics.initialize();
+    });
+
+    describe('initializeV2', function() {
+      it('should call changeUser if userID is present', function(done) {
+        appboy.options.version = 2;
+        analytics.user().id('user-id');
+        analytics.once('ready', function() {
+          window.appboy.getUser().getUserId(function(userId) {
+            assert.equal(userId, 'user-id');
+            done();
+          });
+        });
+        analytics.initialize();
+      });
+
+      it('should initialize the appboy sdk with default options if none are provided', function(done) {
+        appboy.options.version = 2;
+        var spy = sinon.spy(appboy, 'initializeTester');
+        var defaults = {
+          allowCrawlerActivity: false,
+          doNotLoadFontAwesome: false,
+          enableLogging: false,
+          safariWebsitePushId: '',
+          localization: 'en',
+          minimumIntervalBetweenTriggerActionsInSeconds: 30,
+          openInAppMessagesInNewTab: false,
+          openNewsFeedCardsInNewTab: false,
+          sessionTimeoutInSeconds: 30,
+          requireExplicitInAppMessageDismissal: false,
+          enableHtmlInAppMessages: false
+        };
+        analytics.once('ready', function() {
+          try {
+            assert.deepEqual(spy.args[0][1], defaults);
+            done();
+          } catch (e) {
+            done(e);
+          }
+        });
+        analytics.initialize();
+      });
     });
   });
 
