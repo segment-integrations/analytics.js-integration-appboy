@@ -316,6 +316,21 @@ describe('Appboy', function() {
       });
     });
 
+    describe('#alias', function() {
+      beforeEach(function() {
+        analytics.stub(window.appboy.ab.User.prototype, 'addAlias');
+      });
+
+      it('should send an event', function() {
+        analytics.alias({
+          previousId: 'oldName',
+          userId: 'newName'
+        });
+
+        analytics.called(window.appboy.ab.User.prototype.addAlias, 'newName', 'alias');
+      });
+    });
+
     describe('#track', function() {
       beforeEach(function() {
         analytics.stub(window.appboy, 'logCustomEvent');
