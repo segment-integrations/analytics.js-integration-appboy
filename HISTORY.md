@@ -1,4 +1,9 @@
 
+1.5.1 / 2018-06-28
+==================
+
+  * Add support for Appboy's new datacenter clusters (#15)
+
 1.5.0 / 2018-07-27
 ==================
 
