@@ -81,10 +81,10 @@ describe('Appboy', function() {
 
     it('should set the sdk endpoint to the correct datacenter', function(done) {
       var datacenterMappings = {
-        us:   'https://sdk-01.iad.braze.com',
-        us02: 'https://sdk-02.iad.braze.com',
-        us03: 'https://sdk-03.iad-03.braze.com',
-        eu:   'https://sdk-01.api.braze.eu'
+        us:   'https://sdk.iad-01.braze.com',
+        us02: 'https://sdk.iad-02.braze.com',
+        us03: 'https://sdk.iad-03.braze.com',
+        eu:   'https://sdk.fra-01.braze.eu'
       };
 
       var spy = sinon.spy(appboy, 'initializeTester');
