@@ -1,3 +1,15 @@
+1.7.0 / 2018-07-31
+==================
+
+This release includes two changes:
+
+1. Have Initialization hook into Braze callbacks (#26)
+
+  The `v2` initialization of this integration operates with a synchronous mindset inherited from `v1` of the integration. In fact, the Braze `v2` SDK has callbacks which indicate, among other things, when in-app messaging is available. It is important that this integration not invoke `ready()` until these in-app messages are ready. Otherwise, a race condition results, and users invoking `analytics.page()` are not guaranteed to see the appropriate in-app messages.
+
+2.  Remove changeUser from track, page, group and completedOrder (#27).
+
+  Currently, the Braze `Analytics.js` integration does not properly retrieve the` userId` on `track`, `group`, `page`, and `completedOrder` events. After speaking with the Braze team, they mentioned that we should only be calling `changeUser` on `identify`.
 
 1.6.0 / 2018-07-06
 ==================
@@ -27,12 +39,12 @@
 1.3.0 / 2017-07-05
 ==================
 
-  * Switch the endpoint when datacenter is set to 'eu' 
+  * Switch the endpoint when datacenter is set to 'eu'
 
 1.2.1 / 2017-06-26
 ==================
 
-  * Remove reserved keys from custom event properties and user attributes 
+  * Remove reserved keys from custom event properties and user attributes
 
 1.2.0 / 2017-05-15
 ==================
