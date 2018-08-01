@@ -396,15 +396,18 @@ describe('Appboy', function() {
             }
           ]
         });
-        analytics.called(window.appboy.logPurchase, '507f1f77bcf86cd799439011', 19.23, 'USD', 1, {
-          total: 30,
-          revenue: 25,
-          shipping: 3
-        });
-        analytics.called(window.appboy.logPurchase, '505bd76785ebb509fc183733', 3, 'USD', 2, {
-          total: 30,
-          revenue: 25,
-          shipping: 3
+
+        appboy._onMessagingReady(function() {
+          analytics.called(window.appboy.logPurchase, '507f1f77bcf86cd799439011', 19.23, 'USD', 1, {
+            total: 30,
+            revenue: 25,
+            shipping: 3
+          });
+          analytics.called(window.appboy.logPurchase, '505bd76785ebb509fc183733', 3, 'USD', 2, {
+            total: 30,
+            revenue: 25,
+            shipping: 3
+          });
         });
       });
 
@@ -421,8 +424,11 @@ describe('Appboy', function() {
             }
           ]
         });
-        analytics.called(window.appboy.logPurchase, '507f1f77bcf86cd799439011', 17.38);
-        analytics.called(window.appboy.logPurchase, '505bd76785ebb509fc183733', 3);
+
+        appboy._onMessagingReady(function() {
+          analytics.called(window.appboy.logPurchase, '507f1f77bcf86cd799439011', 17.38);
+          analytics.called(window.appboy.logPurchase, '505bd76785ebb509fc183733', 3);
+        });
       });
     });
 
