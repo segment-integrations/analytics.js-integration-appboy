@@ -335,7 +335,10 @@ describe('Appboy', function() {
 
       it('should send an event', function() {
         analytics.track('event');
-        analytics.called(window.appboy.logCustomEvent, 'event');
+
+        appboy._onMessagingReady(function() {
+          analytics.called(window.appboy.logCustomEvent, 'event');
+        });
       });
 
       it('should send all properties', function() {
@@ -344,10 +347,13 @@ describe('Appboy', function() {
           spiritAnimal: 'rihanna',
           best_friend: 'han'
         });
-        analytics.called(window.appboy.logCustomEvent, 'event with properties', {
-          nickname: 'noonz',
-          spiritAnimal: 'rihanna',
-          best_friend: 'han'
+
+        appboy._onMessagingReady(function() {
+          analytics.called(window.appboy.logCustomEvent, 'event with properties', {
+            nickname: 'noonz',
+            spiritAnimal: 'rihanna',
+            best_friend: 'han'
+          });
         });
       });
 
@@ -359,7 +365,10 @@ describe('Appboy', function() {
           currency: 'usd',
           quantity: '123'
         });
-        analytics.called(window.appboy.logCustomEvent, 'event with properties', {});
+
+        appboy._onMessagingReady(function() {
+          analytics.called(window.appboy.logCustomEvent, 'event with properties', {});
+        });
       });
 
       it('should call logPurchase for each product in a Completed Order event', function() {
@@ -425,23 +434,35 @@ describe('Appboy', function() {
       it('should send a page view if trackAllPages is enabled', function() {
         appboy.options.trackAllPages = true;
         analytics.page();
-        analytics.called(window.appboy.logCustomEvent, 'Loaded a Page');
+
+        appboy._onMessagingReady(function() {
+          analytics.called(window.appboy.logCustomEvent, 'Loaded a Page');
+        });
       });
 
       it('should send a page view if trackNamedPages is enabled', function() {
         appboy.options.trackNamedPages = true;
         analytics.page('Home');
-        analytics.called(window.appboy.logCustomEvent, 'Viewed Home Page');
+
+        appboy._onMessagingReady(function() {
+          analytics.called(window.appboy.logCustomEvent, 'Viewed Home Page');
+        });
       });
 
       it('should not send a page view if trackAllPages and trackNamedPages are disabled', function() {
         analytics.page('Home');
-        analytics.didNotCall(window.appboy.logCustomEvent);
+
+        appboy._onMessagingReady(function() {
+          analytics.didNotCall(window.appboy.logCustomEvent);
+        });
       });
 
       it('should not send a page view if trackNamedPages is enabled and name is null', function() {
         analytics.page();
-        analytics.didNotCall(window.appboy.logCustomEvent);
+
+        appboy._onMessagingReady(function() {
+          analytics.didNotCall(window.appboy.logCustomEvent);
+        });
       });
 
       it('should send all properties', function() {
@@ -450,13 +471,16 @@ describe('Appboy', function() {
           title: 'noonz',
           url: 'www.google.com'
         });
-        analytics.called(window.appboy.logCustomEvent, 'Viewed Home Page', {
-          title: 'noonz',
-          url: 'www.google.com',
-          name: 'Home',
-          path: window.location.pathname,
-          referrer: window.document.referrer,
-          search: ''
+
+        appboy._onMessagingReady(function() {
+          analytics.called(window.appboy.logCustomEvent, 'Viewed Home Page', {
+            title: 'noonz',
+            url: 'www.google.com',
+            name: 'Home',
+            path: window.location.pathname,
+            referrer: window.document.referrer,
+            search: ''
+          });
         });
       });
     });
