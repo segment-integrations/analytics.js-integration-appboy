@@ -1,3 +1,8 @@
+1.8.0 / 2018-08-02
+==================
+
+* Revert "Remove changeUser from track, page, group and completedOrder" (#27).
+
 1.7.0 / 2018-07-31
 ==================
 
